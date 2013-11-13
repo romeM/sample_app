@@ -29,7 +29,7 @@ describe "User pages" do
         fill_in "Name", with: "Example User"
         fill_in "Email", with: "user@example.com"
         fill_in "Password", with: "foobar"
-        fill_in "Confirmation", with: "foobar"
+        fill_in "Confirm Password", with: "foobar"
       end
 
       it "should create a user" do
@@ -97,6 +97,7 @@ describe "User pages" do
           visit users_path
         end
 
+
         it { should have_link('delete', href: user_path(User.first)) }
         it "should be able to delete another user" do
           expect do
@@ -124,6 +125,18 @@ describe "User pages" do
     before {
       sign_in(user)
       visit edit_user_path(user) }
+
+    describe "forbidden attributes" do
+      let(:params) do
+        { user: { admin: true, password: user.password,
+                  password_confirmation: user.password } }
+      end
+      before do
+        sign_in user, no_capybara: true
+        patch user_path(user), params
+      end
+      specify { expect(user.reload).not_to be_admin }
+    end
 
     describe "page" do
       it { should have_content("Update your profile") }
